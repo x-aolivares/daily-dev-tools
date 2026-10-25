@@ -20,14 +20,14 @@ def test_alias_son_los_shortcuts_nomas():
 
 def test_gfp_con_rama_y_flag():
     ns = build_parser().parse_args(["gfp", "develop", "--checkout"])
-    assert ns.branch == "develop"
+    assert ns.source_branch == "develop"
     assert ns.checkout is True
     assert ns.remote == "origin"
 
 
 def test_gfp_sin_args_usa_defaults():
     ns = build_parser().parse_args(["gfp"])
-    assert ns.branch is None
+    assert ns.source_branch is None
     assert ns.checkout is False
 
 

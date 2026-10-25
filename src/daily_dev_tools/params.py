@@ -9,13 +9,14 @@ from __future__ import annotations
 import argparse
 
 
-def branch(p: argparse.ArgumentParser) -> None:
-    p.add_argument("branch", nargs="?", help="rama destino (default: la actual)")
-
-
 def target_branch(p: argparse.ArgumentParser) -> None:
-    """Rama obligatoria, pero con el mismo dest=`branch` que `branch`."""
-    p.add_argument("branch", help="rama destino")
+    """Rama destino para crear el branch nuevo."""
+    p.add_argument("target_branch", nargs="?", help="rama destino (default: la actual)")
+
+
+def source_branch(p: argparse.ArgumentParser) -> None:
+    """Rama origen para crear el branch nuevo."""
+    p.add_argument("source_branch", nargs="?", help="rama origen (default: origin/HEAD)")
 
 
 def create(p: argparse.ArgumentParser) -> None:
