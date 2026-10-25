@@ -84,7 +84,8 @@ def git_switch(args) -> int:
     if args.target_branch and args.source_branch:
 
         if is_not_local_branch_(args.target_branch):
-            print(f"La rama ya existe o es invalida.")
+            print(f"La rama: {args.target_branch}, ya existe en local.")
+            must(git("checkout", args.target_branch))
             return 0
 
         must(git("stash", "-u"))
@@ -104,22 +105,21 @@ def git_switch(args) -> int:
     args.source_branch = source
 
     if not is_not_local_branch_(args.target_branch):
+        print(f"La rama: {args.target_branch}, ya existe en local.")
         must(git("checkout", args.target_branch))
-
         return 0
 
     must(git("stash", "-u"))
     must(git("checkout", source))
     must(git("fetch"))
-    pull_result = capture("pull", "origin", source)
+    must(git("pull", "origin", source))
 
-    if pull_result != "":
-        must(git("checkout", "-b", args.target_branch))
+    must(git("checkout", "-b", args.target_branch))
 
-        print(f"Borning from branch: {args.source_branch}")
-        sleep(0.5)
-        print(f"Switching to branch: {args.target_branch}")
-        sleep(0.5)
+    print(f"Borning from branch: {args.source_branch}")
+    sleep(0.5)
+    print(f"Switching to branch: {args.target_branch}")
+    sleep(0.5)
 
     return 0
 
