@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import shutil
 import sys
+from importlib.metadata import version
 
-from .. import __version__
 from ..config import BASHRC, BASH_PROFILE, SHORTCUTS_FILE, scripts_dir, shell_path, short
 from ..registry import COMMANDS, command
 from ..scaffold import new as scaffold_new
@@ -63,7 +63,7 @@ def list_cmd(a) -> int:
 
 @command("version", "Versión instalada", shortcut=False)
 def version_cmd(a) -> int:
-    print(f"ddt {__version__}")
+    print(f"ddt {version('daily_dev_tools')}")
     print(f"python {sys.version.split()[0]}")
     binary = scripts_dir() / ("ddt.exe" if sys.platform == "win32" else "ddt")
     print(f"binario {short(binary)}")

@@ -2,6 +2,4 @@
 
 from .registry import command, shell
 
-__version__ = "0.1.0"
-
-__all__ = ["command", "shell", "__version__"]
+__all__ = ["command", "shell"]

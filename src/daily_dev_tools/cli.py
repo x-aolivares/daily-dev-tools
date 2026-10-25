@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import argparse
 import sys
+from importlib.metadata import version
 
-from . import __version__
 from . import commands  # noqa: F401  importar el paquete = registrar todo
 from .registry import COMMANDS
 
@@ -15,7 +15,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="Shortcuts del día a día. Los alias cortos (gfp, gcp...) "
                     "viven en shortcuts.sh; esto es el dispatcher.",
     )
-    p.add_argument("--version", action="version", version=f"ddt {__version__}")
+    p.add_argument("--version", action="version", version=f"ddt {version('daily_dev_tools')}")
     sub = p.add_subparsers(dest="command", required=True)
 
     for cmd in sorted(COMMANDS.values(), key=lambda c: c.name):
