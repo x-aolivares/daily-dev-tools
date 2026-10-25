@@ -5,12 +5,11 @@ Para crear uno nuevo:  ddt new <nombre>   (crea el archivo)
 """
 from __future__ import annotations
 
-import subprocess
 from time import sleep
 
 from ..utils.git_utils import clean_branch_name
 from ..utils.validation.git_validation_utils import is_not_local_branch_
-from ..git import git, must
+from ..git import capture, git, must
 from ..params import source_branch, checkout, no_pull, remote, target_branch
 from ..registry import command
 
@@ -88,30 +87,11 @@ def git_switch(args) -> int:
             print(f"La rama ya existe o es invalida.")
             return 0
 
-        subprocess.run(
-            ["git", "stash", '-u'],
-            capture_output=False, text=True, check=True,
-        ).stdout.strip()
-
-        subprocess.run(
-            ["git", "checkout", args.source_branch],
-            capture_output=False, text=True, check=True,
-        ).stdout.strip()
-
-        subprocess.run(
-            ["git", "fetch"],
-            capture_output=False, text=True, check=True,
-        ).stdout.strip()
-
-        subprocess.run(
-            ["git", "pull"],
-            capture_output=False, text=True, check=True,
-        ).stdout.strip()
-
-        subprocess.run(
-            ["git", "checkout", "-b", args.target_branch],
-            capture_output=False, text=True, check=True,
-        ).stdout.strip()
+        must(git("stash", "-u"))
+        must(git("checkout", args.source_branch))
+        must(git("fetch"))
+        must(git("pull"))
+        must(git("checkout", "-b", args.target_branch))
 
         print(f"Borning from branch: {args.source_branch}")
         sleep(0.5)
@@ -120,67 +100,38 @@ def git_switch(args) -> int:
 
         return 0
 
-    args.source_branch = clean_branch_name(subprocess.run(
-        ["git", "rev-parse", "--abbrev-ref", "origin/HEAD"],
-        capture_output=True, text=True, check=True,
-    ).stdout.strip())
+    source = clean_branch_name(capture("rev-parse", "--abbrev-ref", "origin/HEAD"))
+    args.source_branch = source
 
     if not is_not_local_branch_(args.target_branch):
-        subprocess.run(
-            ["git", "checkout", args.target_branch],
-            capture_output=False, text=True, check=True,
-        )
+        must(git("checkout", args.target_branch))
 
         return 0
 
-    subprocess.run(
-        ["git", "stash", '-u'],
-        capture_output=False, text=True, check=True,
-    )
+    must(git("stash", "-u"))
+    must(git("checkout", source))
+    must(git("fetch"))
+    pull_result = capture("pull", "origin", source)
 
-    subprocess.run(
-        ["git", "checkout", args.source_branch],
-        capture_output=False, text=True, check=True,
-    )
+    if pull_result != "":
+        must(git("checkout", "-b", args.target_branch))
 
-    subprocess.run(
-        ["git", "fetch"],
-        capture_output=False, text=True, check=True,
-    )
-
-    subprocess.run(
-        ["git", "pull", "origin", args.source_branch],
-        capture_output=True, text=True, check=True,
-    )
-
-    subprocess.run(
-        ["git", "checkout", "-b", args.target_branch],
-        capture_output=False, text=True, check=True,
-    )
-
-    print(f"Borning from branch: {args.source_branch}")
-    sleep(0.5)
-    print(f"Switching to branch: {args.target_branch}")
-    sleep(0.5)
+        print(f"Borning from branch: {args.source_branch}")
+        sleep(0.5)
+        print(f"Switching to branch: {args.target_branch}")
+        sleep(0.5)
 
     return 0
 
 
 @command("gclean", "git clean -f for unused branches", args=[no_pull])
 def git_prune_local_branches(args) -> int:
-    current = subprocess.run(
-        ["git", "branch", "--show-current"],
-        capture_output=True, text=True, check=True,
-    ).stdout.strip()
-
-    branch_list = subprocess.run(
-        ["git", "branch", "--format=%(refname:short)"],
-        capture_output=True, text=True, check=True,
-    ).stdout
+    current = capture("branch", "--show-current")
+    branch_list = capture("branch", "--format=%(refname:short)")
 
     for item_branch in branch_list.splitlines():
         if item_branch.strip() and item_branch.strip() != current:
-            subprocess.run(["git", "branch", "-d", item_branch])
+            git("branch", "-d", item_branch)
             print("Eliminando rama local: ", item_branch)
 
     return 0
