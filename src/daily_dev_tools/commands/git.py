@@ -8,6 +8,8 @@ from __future__ import annotations
 import subprocess
 from time import sleep
 
+from ..utils.git_utils import clean_branch_name
+from ..utils.validation.git_validation_utils import is_not_local_branch_
 from ..git import git, must
 from ..params import source_branch, checkout, no_pull, remote, target_branch
 from ..registry import command
@@ -74,15 +76,40 @@ def gfp(a) -> int:
 # def gl(a) -> int:
 #     return git("log", "--oneline", "--decorate", "-n", str(a.n))
 
-@command("gc", "git checkout", args=[target_branch, source_branch])
-def git_checkout(args) -> int:
+@command("gs", "git checkout", args=[target_branch, source_branch])
+def git_switch(args) -> int:
     if not args.target_branch and not args.source_branch:
         print(f"se requiere al menos un parametro de entrada.")
         return 0
 
     if args.target_branch and args.source_branch:
+
+        if is_not_local_branch_(args.target_branch):
+            print(f"La rama ya existe o es invalida.")
+            return 0
+
         subprocess.run(
-            ["git", "checkout", "-b", args.target_branch, args.source_branch],
+            ["git", "stash", '-u'],
+            capture_output=False, text=True, check=True,
+        ).stdout.strip()
+
+        subprocess.run(
+            ["git", "checkout", args.source_branch],
+            capture_output=False, text=True, check=True,
+        ).stdout.strip()
+
+        subprocess.run(
+            ["git", "fetch"],
+            capture_output=False, text=True, check=True,
+        ).stdout.strip()
+
+        subprocess.run(
+            ["git", "pull"],
+            capture_output=False, text=True, check=True,
+        ).stdout.strip()
+
+        subprocess.run(
+            ["git", "checkout", "-b", args.target_branch],
             capture_output=False, text=True, check=True,
         ).stdout.strip()
 
@@ -91,15 +118,45 @@ def git_checkout(args) -> int:
         print(f"Switching to branch: {args.target_branch}")
         sleep(0.5)
 
-    args.source_branch = subprocess.run(
+        return 0
+
+    args.source_branch = clean_branch_name(subprocess.run(
         ["git", "rev-parse", "--abbrev-ref", "origin/HEAD"],
         capture_output=True, text=True, check=True,
-    ).stdout.strip()
+    ).stdout.strip())
+
+    if not is_not_local_branch_(args.target_branch):
+        subprocess.run(
+            ["git", "checkout", args.target_branch],
+            capture_output=False, text=True, check=True,
+        )
+
+        return 0
 
     subprocess.run(
-        ["git", "checkout", "-b", args.target_branch, args.source_branch],
+        ["git", "stash", '-u'],
         capture_output=False, text=True, check=True,
-    ).stdout.strip()
+    )
+
+    subprocess.run(
+        ["git", "checkout", args.source_branch],
+        capture_output=False, text=True, check=True,
+    )
+
+    subprocess.run(
+        ["git", "fetch"],
+        capture_output=False, text=True, check=True,
+    )
+
+    subprocess.run(
+        ["git", "pull", "origin", args.source_branch],
+        capture_output=True, text=True, check=True,
+    )
+
+    subprocess.run(
+        ["git", "checkout", "-b", args.target_branch],
+        capture_output=False, text=True, check=True,
+    )
 
     print(f"Borning from branch: {args.source_branch}")
     sleep(0.5)
