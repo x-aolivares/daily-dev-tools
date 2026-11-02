@@ -62,6 +62,28 @@ def shell(name: str, help: str, *, bash: str) -> Command:
     return _register(Command(name=name, help=help, bash=bash))
 
 
+def shell_command(name: str, help: str) -> Callable[[Callable[[], str]], Command]:
+    """Decorador para comandos shell definidos como funciones.
+
+    La función se ejecuta al importar el módulo y debe devolver el bash que
+    se va a registrar. Así se mantiene el estilo de `@command`, permitiendo
+    varios comandos similares en un mismo archivo.
+
+        @shell_command("gtws", "go to al workspace")
+        def go_to_workspace() -> str:
+            ...
+            return f'cd "{path}"'
+    """
+
+    def decorator(fn: Callable[[], str]) -> Command:
+        bash = fn()
+        if not isinstance(bash, str) or not bash.strip():
+            raise ValueError(f"{name!r}: la función debe devolver un bash no vacío")
+        return shell(name, help, bash=bash)
+
+    return decorator
+
+
 def _register(cmd: Command) -> Command:
     if not NAME_RE.match(cmd.name):
         raise ValueError(f"nombre de comando inválido: {cmd.name!r}")

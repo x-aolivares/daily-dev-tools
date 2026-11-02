@@ -33,9 +33,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         args = build_parser().parse_args(argv)
     except SystemExit as e:
-        return _exit_code(e)          # argparse ya imprimió help/usage
+        return _exit_code(e)  # argparse ya imprimió help/usage
 
-    if args.func is None:             # comando que solo vive en la shell
+    if args.func is None:  # comando que solo vive en la shell
         cmd = COMMANDS[args.command]
         print(f"ddt: {cmd.name} es un shortcut de shell, usalo directo:  {cmd.name}",
               file=sys.stderr)
@@ -44,7 +44,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         return args.func(args) or 0
-    except SystemExit as e:           # must() o error de uso nuestro
+    except SystemExit as e:  # must() o error de uso nuestro
         return _exit_code(e)
     except KeyboardInterrupt:
         return 130

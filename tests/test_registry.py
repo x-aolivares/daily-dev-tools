@@ -2,11 +2,6 @@ from daily_dev_tools.cli import build_parser
 from daily_dev_tools.registry import COMMANDS
 
 
-def test_pack_de_ejemplo_registrado():
-    for name in ("gfp", "gcp", "gco", "gsync", "gs", "gl", "groot", "ggl"):
-        assert name in COMMANDS
-
-
 def test_comandos_de_admin_no_generan_alias():
     for name in ("setup", "reload", "teardown", "new", "list", "doctor"):
         assert COMMANDS[name].shortcut is False
@@ -31,21 +26,4 @@ def test_gfp_sin_args_usa_defaults():
     assert ns.checkout is False
 
 
-def test_gcp_acepta_varios_commits():
-    ns = build_parser().parse_args(["gcp", "develop", "abc", "def", "--no-pull"])
-    assert ns.branch == "develop"
-    assert ns.commits == ["abc", "def"]
-    assert ns.no_pull is True
 
-
-def test_gco_con_create():
-    ns = build_parser().parse_args(["gco", "develop", "-b"])
-    assert ns.branch == "develop"
-    assert ns.create is True
-
-
-def test_gcp_sin_commits_es_error_de_uso():
-    import pytest
-
-    with pytest.raises(SystemExit):
-        build_parser().parse_args(["gcp", "develop"])

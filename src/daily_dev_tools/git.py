@@ -15,10 +15,10 @@ def must(rc: int) -> None:
         raise SystemExit(rc)
 
 
-def capture(*args: str) -> str:
+def capture(*args: str, capture_subprocess: str = "git") -> str:
     """Corre git/devuelve stdout limpio. Lanza si falla."""
     out = subprocess.run(
-        ["git", *args], capture_output=True, text=True, check=True
+        [capture_subprocess, *args], capture_output=True, text=True, check=True
     )
     return out.stdout.strip()
 
