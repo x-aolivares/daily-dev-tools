@@ -46,3 +46,8 @@ def no_pull(p: argparse.ArgumentParser) -> None:
 
 def limit(p: argparse.ArgumentParser) -> None:
     p.add_argument("-n", type=int, default=10, help="cuántas líneas (default: 10)")
+
+
+def path(p: argparse.ArgumentParser) -> None:
+    """Ruta destino (positional, opcional)."""
+    p.add_argument("path", nargs="?", default=None, help="ruta destino")

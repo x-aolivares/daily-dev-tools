@@ -10,6 +10,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from ..params import path
 from ..registry import shell_command
 
 # .env del repo cuando está instalado en modo editable; si no existe,
@@ -17,10 +18,15 @@ from ..registry import shell_command
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
-@shell_command("gtws", "go to al workspace")
-def go_to_workspace() -> str:
-    load_dotenv(_REPO_ROOT / ".env")
-    path = os.getenv("WORKSPACE_PATH")
-    if not path:
+@shell_command("gtws", "go to al workspace", args=[path])
+def go_to_workspace(args) -> str:
+    if not args:
+        load_dotenv(_REPO_ROOT / ".env")
+        workspace = os.getenv("WORKSPACE_PATH")
+    else:
+        workspace = args.path
+
+    if not workspace:
         return 'cd "${WORKSPACE_PATH:?WORKSPACE_PATH no está definido}"'
-    return f'cd "{path}"'
+
+    return f'cd "{workspace}"'

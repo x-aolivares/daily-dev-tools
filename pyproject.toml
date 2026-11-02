@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "daily-dev-tools"
-version = "0.1.0"
+version = "0.1.2"
 description = "Shortcuts del día a día para Git Bash: gfp, gcp, y los tuyos"
 readme = "README.md"
 requires-python = ">=3.10"

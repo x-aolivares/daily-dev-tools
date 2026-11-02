@@ -62,24 +62,51 @@ def shell(name: str, help: str, *, bash: str) -> Command:
     return _register(Command(name=name, help=help, bash=bash))
 
 
-def shell_command(name: str, help: str) -> Callable[[Callable[[], str]], Command]:
-    """Decorador para comandos shell definidos como funciones.
+def shell_command(name: str, help: str, *, args: Sequence[Callable[[argparse.ArgumentParser], None]] = ()) -> Callable:
+    """Decorador para comandos shell.
 
-    La función se ejecuta al importar el módulo y debe devolver el bash que
-    se va a registrar. Así se mantiene el estilo de `@command`, permitiendo
-    varios comandos similares en un mismo archivo.
+    Modo estático (sin args y función sin parámetros): la función se ejecuta al
+    importar y debe devolver el bash a registrar (compatibilidad hacia atrás).
 
-        @shell_command("gtws", "go to al workspace")
-        def go_to_workspace() -> str:
-            ...
-            return f'cd "{path}"'
+    Modo híbrido (con args o función con parámetro): la función recibe el
+    Namespace parseado y debe devolver el bash a ejecutar; se registra un
+    comando Python que imprime ese bash y un alias de shell que hace
+    `eval "$(ddt name "$@")"`, permitiendo flags/args y efecto en la shell
+    padre (cd, export, source).
     """
 
-    def decorator(fn: Callable[[], str]) -> Command:
-        bash = fn()
-        if not isinstance(bash, str) or not bash.strip():
-            raise ValueError(f"{name!r}: la función debe devolver un bash no vacío")
-        return shell(name, help, bash=bash)
+    def decorator(fn: Callable) -> Command:
+        import inspect
+
+        param_count = len(inspect.signature(fn).parameters)
+
+        # Modo estático (compatibilidad hacia atrás).
+        if not args and param_count == 0:
+            bash = fn()
+            if not isinstance(bash, str) or not bash.strip():
+                raise ValueError(f"{name!r}: la función debe devolver un bash no vacío")
+            return shell(name, help, bash=bash)
+
+        # Modo híbrido.
+        def _run(parsed: argparse.Namespace) -> int:
+            if param_count == 0:
+                result = fn()
+            else:
+                class _ShellArgs(argparse.Namespace):
+                    def __bool__(self) -> bool:
+                        return any(bool(v) for v in vars(self).values())
+
+                filtered = {k: v for k, v in vars(parsed).items() if k not in ("command", "func")}
+                result = fn(_ShellArgs(**filtered))
+
+            if not isinstance(result, str) or not result.strip():
+                raise ValueError(f"{name!r}: la función debe devolver un bash no vacío")
+            print(result)
+            return 0
+
+        bash_alias = f'eval "$(ddt {name} "$@")"'
+        cmd = Command(name=name, help=help, run=_run, bash=bash_alias, args=list(args), shortcut=True)
+        return _register(cmd)
 
     return decorator
 
