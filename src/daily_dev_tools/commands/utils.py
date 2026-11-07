@@ -30,3 +30,9 @@ def go_to_workspace(args) -> str:
         return 'cd "${WORKSPACE_PATH:?WORKSPACE_PATH no está definido}"'
 
     return f'cd "{workspace}"'
+
+
+@shell_command("gth", "go to project home", args=[])
+def go_to_workspace(args) -> str:
+    vr = Path(__file__).resolve().parent.parent.parent.parent.as_posix()
+    return f"cd {vr}"
