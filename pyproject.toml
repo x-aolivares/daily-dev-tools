@@ -1,13 +1,14 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "daily-dev-tools"
-version = "0.1.2"
+version = "1.0.0"
 description = "Shortcuts del día a día para Git Bash: gfp, gcp, y los tuyos"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.14"
+dynamic = ["dependencies", "optional-dependencies"]
 license = { text = "MIT" }
 authors = [{ name = "Alessandro Olivares" }]
 keywords = ["git", "shortcuts", "cli", "git-bash"]
@@ -20,3 +21,6 @@ packages = ["src/daily_dev_tools"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["docs/requirements.txt"]}

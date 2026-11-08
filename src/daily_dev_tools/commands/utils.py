@@ -10,7 +10,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from ..params import path
+from ..params import path, setup
 from ..registry import shell_command
 
 # .env del repo cuando está instalado en modo editable; si no existe,
@@ -36,3 +36,11 @@ def go_to_workspace(args) -> str:
 def go_to_workspace(args) -> str:
     vr = Path(__file__).resolve().parent.parent.parent.parent.as_posix()
     return f"cd {vr}"
+
+
+@shell_command("rt", "reload terminal", args=[setup])
+def go_to_workspace(args) -> str:
+    if not args.setup or args.setup != "setup":
+        return f"source ~/.bashrc"
+
+    return 'ddt setup && eval "$(ddt setup)"'

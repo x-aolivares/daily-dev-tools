@@ -30,9 +30,9 @@ def setup() -> int:
         sys.stdout.write(_session_setup_code())
         return 0
 
-    print(f"instalado: {short(BASHRC)}", file=sys.stderr)
-    print(f"           {short(SHORTCUTS_FILE)}", file=sys.stderr)
-    print('para usarlo YA en esta terminal:  eval "$(ddt setup)"', file=sys.stderr)
+    # print(f"instalado: {short(BASHRC)}", file=sys.stderr)
+    # print(f"           {short(SHORTCUTS_FILE)}", file=sys.stderr)
+    # print('para usarlo YA en esta terminal:  eval "$(ddt setup)"', file=sys.stderr)
     return 0
 
 
@@ -69,12 +69,10 @@ def _session_setup_code() -> str:
 
 def reload() -> int:
     """Regenera shortcuts.sh tras crear o editar un comando."""
-    names = generate.generate()
+    # names = generate.generate()
     if not sys.stdout.isatty():
         sys.stdout.write(f'. "{shell_path(SHORTCUTS_FILE)}"\n')
         return 0
-    print(f"{len(names)} shortcuts en {short(SHORTCUTS_FILE)}", file=sys.stderr)
-    print("recargalos con:  ddt-reload", file=sys.stderr)
     return 0
 
 

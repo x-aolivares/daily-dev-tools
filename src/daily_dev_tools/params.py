@@ -51,3 +51,7 @@ def limit(p: argparse.ArgumentParser) -> None:
 def path(p: argparse.ArgumentParser) -> None:
     """Ruta destino (positional, opcional)."""
     p.add_argument("path", nargs="?", default=None, help="ruta destino")
+
+def setup(p: argparse.ArgumentParser) -> None:
+    """Ejecucion del setup"""
+    p.add_argument("setup", nargs="?", default=None, help="ruta destino")
