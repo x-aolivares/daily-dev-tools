@@ -48,6 +48,26 @@ ggl 5                   # git log --stat de los últimos 5
 Todos funcionan igual con el prefijo (`ddt gfp develop`): el alias es un wrapper
 de una línea, así que no hay forma de que diverjan.
 
+### Worktrees por historia
+
+Un worktree se crea en `<WORKTREES_PATH>/<rama>/<proyecto>`, así que una misma
+historia puede tener varios proyectos adentro.
+
+```bash
+gaw feature/X                 # crea el worktree desde la rama actual
+gaw feature/X develop         # ... desde origin/develop
+gaw rm YNC-3250               # borra TODOS los proyectos de la historia
+gaw rm YNC-3250 --dry-run     # muestra qué borraría, sin tocar nada
+gaw rm YNC-3250 --force       # fuerza worktrees con cambios sin commitear
+```
+
+- `WORKTREES_PATH` default: `C:/Development/worktrees` en Windows,
+  `~/worktrees` en Linux/macOS.
+- La historia se resuelve por sufijo: `YNC-3250` encuentra `feature/YNC-3250`.
+  Si hay más de una coincidencia, pide la ruta exacta.
+- `rm` es palabra reservada (no podés crear una rama llamada así).
+- `gaw rm` no borra ramas git: solo worktrees y las carpetas que quedan vacías.
+
 ## Crear un comando nuevo
 
 ```bash
@@ -128,6 +148,7 @@ src/daily_dev_tools/
 │   └── install.py     # setup / reload / teardown
 └── commands/          # acá vive todo lo tuyo
     ├── git.py         # gfp, gcp, gco, gsync, gs, gl
+    ├── worktree.py    # gaw: crear y limpiar worktrees por historia
     ├── nav.py         # groot, ggl (nativos de shell)
     └── admin.py       # setup, new, list, doctor...
 ```

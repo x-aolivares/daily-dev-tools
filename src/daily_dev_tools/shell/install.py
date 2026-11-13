@@ -69,7 +69,7 @@ def _session_setup_code() -> str:
 
 def reload() -> int:
     """Regenera shortcuts.sh tras crear o editar un comando."""
-    # names = generate.generate()
+    generate.generate()
     if not sys.stdout.isatty():
         sys.stdout.write(f'. "{shell_path(SHORTCUTS_FILE)}"\n')
         return 0

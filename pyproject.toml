@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "daily-dev-tools"
-version = "1.0.1"
+version = "1.1.0"
 description = "Shortcuts del día a día para Git Bash: gfp, gcp, y los tuyos"
 requires-python = ">=3.14"
 dynamic = ["dependencies", "optional-dependencies"]
