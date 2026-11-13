@@ -61,8 +61,8 @@ gaw rm YNC-3250 --dry-run     # muestra qué borraría, sin tocar nada
 gaw rm YNC-3250 --force       # fuerza worktrees con cambios sin commitear
 ```
 
-- `WORKTREES_PATH` default: `C:/Development/worktrees` en Windows,
-  `~/worktrees` en Linux/macOS.
+- `WORKTREE_PATH` (en `.env` o variable de entorno) default:
+  `C:/Development/worktrees` en Windows, `~/worktrees` en Linux/macOS.
 - La historia se resuelve por sufijo: `YNC-3250` encuentra `feature/YNC-3250`.
   Si hay más de una coincidencia, pide la ruta exacta.
 - `rm` es palabra reservada (no podés crear una rama llamada así).

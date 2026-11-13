@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from daily_dev_tools.cli import build_parser, main
+from daily_dev_tools.commands import worktree
 from daily_dev_tools.commands.worktree import (
     find_story_dirs,
     normalize_shell_path,
@@ -16,6 +17,12 @@ from daily_dev_tools.commands.worktree import (
 
 GIT = shutil.which("git")
 requires_git = pytest.mark.skipif(GIT is None, reason="git no está en el PATH")
+
+
+@pytest.fixture(autouse=True)
+def _sin_env_real(tmp_path, monkeypatch):
+    """Que el .env real del repo no se meta en los tests."""
+    monkeypatch.setattr(worktree, "ENV_FILE", tmp_path / "no-existe.env")
 
 
 # ------------------------------------------------------------------ parser
@@ -66,7 +73,37 @@ def test_normalize_shell_path_convierte_drive():
 
 
 def test_worktrees_root_lee_env(monkeypatch, tmp_path):
+    monkeypatch.setenv("WORKTREE_PATH", str(tmp_path))
+    assert worktrees_root() == tmp_path
+
+
+def test_worktrees_root_fallback_plural(monkeypatch, tmp_path):
+    monkeypatch.delenv("WORKTREE_PATH", raising=False)
     monkeypatch.setenv("WORKTREES_PATH", str(tmp_path))
+    assert worktrees_root() == tmp_path
+
+
+def test_worktrees_root_lee_dotenv(tmp_path, monkeypatch):
+    monkeypatch.delenv("WORKTREE_PATH", raising=False)
+    monkeypatch.delenv("WORKTREES_PATH", raising=False)
+    env_file = tmp_path / ".env"
+    env_file.write_text("WORKTREE_PATH=/c/Development/worktrees\n", encoding="utf-8")
+    monkeypatch.setattr(worktree, "ENV_FILE", env_file)
+
+    esperado = (
+        Path("C:/Development/worktrees")
+        if os.name == "nt"
+        else Path("/c/Development/worktrees")
+    )
+    assert worktrees_root() == esperado
+
+
+def test_entorno_gana_sobre_dotenv(tmp_path, monkeypatch):
+    env_file = tmp_path / ".env"
+    env_file.write_text("WORKTREE_PATH=/c/desde-dotenv\n", encoding="utf-8")
+    monkeypatch.setattr(worktree, "ENV_FILE", env_file)
+    monkeypatch.setenv("WORKTREE_PATH", str(tmp_path))
+
     assert worktrees_root() == tmp_path
 
 
@@ -142,7 +179,7 @@ def _repo_con_worktree(base: Path, project: str, branch: str) -> tuple[Path, Pat
 
 @requires_git
 def test_rm_borra_todos_los_proyectos(tmp_path, monkeypatch):
-    monkeypatch.setenv("WORKTREES_PATH", str(tmp_path / "wt"))
+    monkeypatch.setenv("WORKTREE_PATH", str(tmp_path / "wt"))
     main1, wt1 = _repo_con_worktree(tmp_path, "proj1", "feature/YNC-1")
     main2, wt2 = _repo_con_worktree(tmp_path, "proj2", "feature/YNC-1")
 
@@ -162,7 +199,7 @@ def test_rm_borra_todos_los_proyectos(tmp_path, monkeypatch):
 
 @requires_git
 def test_rm_sin_force_falla_con_cambios(tmp_path, monkeypatch):
-    monkeypatch.setenv("WORKTREES_PATH", str(tmp_path / "wt"))
+    monkeypatch.setenv("WORKTREE_PATH", str(tmp_path / "wt"))
     _, worktree = _repo_con_worktree(tmp_path, "proj1", "feature/YNC-1")
     (worktree / "f.txt").write_text("cambiado")
 
@@ -172,7 +209,7 @@ def test_rm_sin_force_falla_con_cambios(tmp_path, monkeypatch):
 
 @requires_git
 def test_rm_con_force_borra_con_cambios(tmp_path, monkeypatch):
-    monkeypatch.setenv("WORKTREES_PATH", str(tmp_path / "wt"))
+    monkeypatch.setenv("WORKTREE_PATH", str(tmp_path / "wt"))
     _, worktree = _repo_con_worktree(tmp_path, "proj1", "feature/YNC-1")
     (worktree / "f.txt").write_text("cambiado")
 
@@ -182,7 +219,7 @@ def test_rm_con_force_borra_con_cambios(tmp_path, monkeypatch):
 
 @requires_git
 def test_rm_dry_run_no_toca_nada(tmp_path, monkeypatch):
-    monkeypatch.setenv("WORKTREES_PATH", str(tmp_path / "wt"))
+    monkeypatch.setenv("WORKTREE_PATH", str(tmp_path / "wt"))
     _, worktree = _repo_con_worktree(tmp_path, "proj1", "feature/YNC-1")
 
     assert remove_story("YNC-1", dry_run=True) == 0
@@ -190,7 +227,7 @@ def test_rm_dry_run_no_toca_nada(tmp_path, monkeypatch):
 
 
 def test_rm_deja_lo_que_no_es_worktree(tmp_path, monkeypatch):
-    monkeypatch.setenv("WORKTREES_PATH", str(tmp_path / "wt"))
+    monkeypatch.setenv("WORKTREE_PATH", str(tmp_path / "wt"))
     story = tmp_path / "wt" / "feature" / "YNC-1"
     (story / "raro").mkdir(parents=True)
     (story / "raro" / "archivo.txt").write_text("no soy un worktree")

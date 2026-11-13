@@ -19,6 +19,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 from ..config import shell_path
 from ..git import capture, current_branch, git, must, repo_root
 from ..registry import command
@@ -27,6 +29,10 @@ from ..utils.validation.git_validation_utils import is_not_local_branch_
 DEFAULT_WORKTREES_PATH = "C:/Development/worktrees"
 RESERVED = "rm"
 MAX_DEPTH = 8
+
+# Mismo criterio que commands/utils.py: el .env del repo en modo editable.
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+ENV_FILE = _REPO_ROOT / ".env"
 
 _DRIVE_RE = re.compile(r"^/([A-Za-z])/(.*)$")
 _DRIVE_ROOT_RE = re.compile(r"^/([A-Za-z])$")
@@ -169,7 +175,8 @@ def remove_story(name: str, *, force: bool = False, dry_run: bool = False) -> in
 # -------------------------------------------------------------------- rutas
 
 def worktrees_root() -> Path:
-    raw = os.getenv("WORKTREES_PATH")
+    load_dotenv(ENV_FILE)  # override=False: una variable real gana sobre el .env
+    raw = os.getenv("WORKTREE_PATH") or os.getenv("WORKTREES_PATH")
     if raw:
         return Path(normalize_shell_path(raw))
     if os.name == "nt":
