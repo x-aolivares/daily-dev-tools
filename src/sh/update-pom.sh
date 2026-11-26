@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# sh /c/Development/config/daily-dev-tools/src/sh/update-pom.sh
 
 # Salir si ocurre un error inesperado
 set -e
