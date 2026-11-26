@@ -5,7 +5,7 @@
 #   sh sync-projects.sh development performance/springboot-4.2.0-upgrade
 #
 #   # Si quieres asegurarte explícitamente de que se quede en wb/workspace-config:
-#   sh sync-projects.sh development performance/springboot-4.2.0-upgrade wb/workspace-config
+#   sh /c/Development/config/daily-dev-tools/src/sh/sync-projects.sh development performance/springboot-4.2.0-upgrade wb/workspace-config
 
 set -u
 default_branch="${1:?Falta rama_default (ej: development)}"
